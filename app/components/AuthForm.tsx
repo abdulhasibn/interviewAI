@@ -8,9 +8,10 @@ import Image from "next/image";
 import { toast } from "sonner";
 import Link from "next/link";
 import FormField from "./FormField";
+import { useRouter } from "next/navigation";
 const getAuthFormSchema = (type: "signIn" | "signUp") => {
   return z.object({
-    name: type === "signUp" ? z.string().min(2).max(3) : z.string().optional(),
+    name: type === "signUp" ? z.string().min(2).max(15) : z.string().optional(),
     email: z.string().email(),
     password: z.string().min(3),
   });
@@ -21,6 +22,7 @@ type AuthFormProps = {
 };
 
 const AuthForm = ({ type }: AuthFormProps) => {
+  const router = useRouter();
   const formSchema = getAuthFormSchema(type);
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
@@ -36,9 +38,11 @@ const AuthForm = ({ type }: AuthFormProps) => {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     try {
       if (!isSignIn) {
-        console.log("sign up", values);
+        toast.success("Sign up successful");
+        router.push("/signIn");
       } else {
-        console.log("sign in", values);
+        toast.success("Sign in successful");
+        router.push("/");
       }
     } catch (error) {
       console.log(error);
