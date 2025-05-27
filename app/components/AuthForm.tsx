@@ -9,6 +9,12 @@ import { toast } from "sonner";
 import Link from "next/link";
 import FormField from "./FormField";
 import { useRouter } from "next/navigation";
+import { signIn, signUp } from "@/lib/actions/auth.action";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { auth } from "@/firebase/client";
 const getAuthFormSchema = (type: "signIn" | "signUp") => {
   return z.object({
     name: type === "signUp" ? z.string().min(2).max(15) : z.string().optional(),
@@ -35,13 +41,48 @@ const AuthForm = ({ type }: AuthFormProps) => {
   });
   const isSignIn = type === "signIn";
   // 2. Define a submit handler.
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       if (!isSignIn) {
+        const { name, email, password } = values;
+        const userCredentials = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        const { success, message } = await signUp({
+          uid: userCredentials.user.uid,
+          name: name!,
+          email,
+          password,
+        });
+        if (!success) {
+          toast.error(message);
+          return;
+        }
         toast.success("Sign up successful");
         router.push("/signIn");
       } else {
-        toast.success("Sign in successful");
+        const { email, password } = values;
+        const userCredentials = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        const idToken = await userCredentials.user.getIdToken();
+        if (!idToken) {
+          toast.error("Something went wrong");
+          return;
+        }
+        const { success, message } = await signIn({
+          email,
+          idToken,
+        });
+        if (!success) {
+          toast.error(message);
+          return;
+        }
+        toast.success(message);
         router.push("/");
       }
     } catch (error) {
