@@ -2,9 +2,8 @@
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-
 const firebaseConfig = {
-  apiKey: "AIzaSyAyJi01OX6tfTBPZ9Yt5LqddQ5tuOT-Bk4",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_CLIENT_API_KEY,
   authDomain: "prepwise-6074f.firebaseapp.com",
   projectId: "prepwise-6074f",
   storageBucket: "prepwise-6074f.firebasestorage.app",
